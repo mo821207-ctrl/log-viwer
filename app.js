@@ -298,3 +298,22 @@ function matrixScore(log){return withLog(log,()=>{const high=log.r.filter(x=>+x.
 function renderMapRecommendation(){const root=$('#mapRecommendation');if(!root)return;if(MULTI.logs.length<2){root.innerHTML='<div class="alert">匯入至少兩個 Log 後產生基礎 Map 資料組建議。</div>';return}const ranked=MULTI.logs.map(log=>({log,score:matrixScore(log)})).sort((a,b)=>b.score.total-a.score.total),best=ranked[0];root.innerHTML=`<div class="card"><div class="map-winner">🏆 ${best.log.name}</div><div class="mut">依 AFR 接近度、爆震事件、供油餘裕與溫度資料排序。此結果用於選擇進一步驗證的基礎資料組。</div><div class="grid" style="margin-top:9px">${stat('綜合評分',best.score.total)}${stat('平均 AFR',fmt(best.score.afr))}${stat('爆震事件',best.score.kn)}${stat('噴嘴峰值',fmt(best.score.duty)+'%')}${stat('最高溫度',fmt(best.score.temp)+' °C')}</div><div class="matrix-note">建議先保留表現穩定的主燃油與主點火基準，再逐項檢查補償表與保護表；每次只變更單一變因並重新記錄 Log。</div></div>`}
 const analysisV36=analysis;analysis=function(){analysisV36();renderTuningMatrix();renderMapRecommendation()};
 const renderMultiV36=renderMulti;renderMulti=function(){renderMultiV36();setTimeout(renderMapRecommendation,0)};
+推薦基礎 Map
+
+🏆 Map B
+建議保留
+
+Fuel Main Table
+Ignition Main Table
+
+建議優先檢查
+
+TPS Fuel Comp
+Knock Control Table
+
+排名原因
+
+AFR 最接近目標
+爆震最少
+供油餘裕最高
+水溫最低
