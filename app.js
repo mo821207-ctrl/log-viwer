@@ -130,14 +130,87 @@ function bindProfiles(){const sel=$('#profileSelect');if(!sel||sel.dataset.bound
 const renderUnifiedBase=render;render=function(){renderUnifiedBase();setTimeout(()=>{renderDashboard();renderUnifiedAnalysis();bindProfiles()},0)};setTimeout(bindProfiles,0);
 
 // v3.6 可調參數對照表與優先順序
-const TUNING_REFERENCE={
- afrLean:{title:'AFR 偏稀',sensors:['AFR','TPS','MAP','燃油壓力'],tables:[['Fuel Main Table',5],['Fuel Pressure',5],['TPS Fuel Comp',4],['RPM Fuel Comp',4],['Injector Size',3]]},
- afrRich:{title:'AFR 偏濃',sensors:['AFR','TPS','引擎溫度','電壓'],tables:[['Fuel Main Table',5],['TPS Fuel Comp',4],['O2 Correction',3],['Warmup Enrichment',3],['Injector Dead Time',2]]},
- knock:{title:'爆震事件',sensors:['Knock','AFR','IAT','RPM'],tables:[['Ignition Main Table',5],['Knock Control Table',5],['AFR Target Table',4],['IAT Ignition Comp',4],['Water Temp Comp',3]]},
- highIat:{title:'進氣溫度偏高',sensors:['IAT','AFR','Knock'],tables:[['IAT Ignition Comp',5],['IAT Fuel Comp',4],['Airbox Flow',4],['Heat Shield',3]]},
- highTemp:{title:'引擎溫度偏高',sensors:['ECT','AFR','Fan'],tables:[['Fan Temp ON',5],['Coolant System',5],['ECT Protection',4],['ECT Fuel Comp',3],['ECT Ignition Comp',3]]},
- injectorDuty:{title:'噴嘴使用率偏高',sensors:['Injector Duty','AFR','Fuel Pressure'],tables:[['Injector Size',5],['Fuel Pressure',5],['Fuel Pump',4],['Duty Compensation',3]]},
- lowVoltage:{title:'電壓偏低',sensors:['Battery Voltage','Charging'],tables:[['Battery',5],['Charging System',5],['Grounding',4],['Injector Dead Time',3],['Coil Dwell',3]]}
+const TUNING_REFERENCE = {
+  afrLean: {
+    title: "AFR 偏稀",
+    tables: [
+      ["Fuel Main Table", 5],
+      ["TPS Fuel Comp", 4],
+      ["RPM Fuel Comp", 4],
+      ["Fuel Pressure", 5],
+      ["Injector Size", 3]
+    ]
+  },
+
+  afrRich: {
+    title: "AFR 偏濃",
+    tables: [
+      ["Fuel Main Table", 5],
+      ["TPS Fuel Comp", 4],
+      ["O2 Correction", 3],
+      ["Warmup Enrichment", 3],
+      ["Injector Dead Time", 2]
+    ]
+  },
+
+  knock: {
+    title: "爆震事件",
+    tables: [
+      ["Ignition Main Table", 5],
+      ["Knock Control Table", 5],
+      ["AFR Target Table", 4],
+      ["IAT Ignition Comp", 4],
+      ["Water Temp Comp", 3]
+    ]
+  },
+
+  highTemp: {
+    title: "高水溫",
+    tables: [
+      ["Fan Temp ON", 5],
+      ["Coolant System", 5],
+      ["ECT Protection", 4],
+      ["ECT Fuel Comp", 3],
+      ["ECT Ignition Comp", 3]
+    ]
+  },
+
+  highIAT: {
+    title: "高進氣溫",
+    tables: [
+      ["IAT Ignition Comp", 5],
+      ["IAT Fuel Comp", 4],
+      ["Airbox Flow", 4],
+      ["Heat Shield", 3]
+    ]
+  },
+
+  injectorDuty: {
+    title: "噴油嘴飽和",
+    tables: [
+      ["Injector Size", 5],
+      ["Fuel Pressure", 5],
+      ["Fuel Pump", 4],
+      ["Duty Compensation", 3]
+    ]
+  },
+
+  lowVoltage: {
+    title: "電壓偏低",
+    tables: [
+      ["Battery", 5],
+      ["Charging System", 5],
+      ["Grounding", 4],
+      ["Injector Dead Time", 3],
+      ["Coil Dwell", 3]
+    ]
+  }
+};
+function star(level){
+  return "★".repeat(level) +
+         "☆".repeat(5-level);
+}
+
 };
 function ratingStars(level){return '★'.repeat(level)+'☆'.repeat(5-level)}
 function currentTuningSignals(rows=S.r){
@@ -153,7 +226,66 @@ function currentTuningSignals(rows=S.r){
  if(voltage!=null&&voltage<12)signals.push({key:'lowVoltage',level:'warning',priority:65,detail:`最低電壓 ${fmt(voltage)} V`});
  return signals.sort((a,b)=>b.priority-a.priority)
 }
-function renderReferenceCard(signal){const ref=TUNING_REFERENCE[signal.key];return`<div class="tuning-card ${signal.level}"><h3>${ref.title}</h3><div class="mut">${signal.detail}</div>${ref.tables.map(([name,p])=>`<div class="ref-row"><span>${name}</span><b>${ratingStars(p)}</b></div>`).join('')}<div class="sensor-list">${ref.sensors.map(x=>`<span>${x}</span>`).join('')}</div><div class="matrix-note">星等代表優先檢查順序；參數名稱可能依 ECU 韌體與車種設定而不同。</div></div>`}
+function renderReference(key){
+
+  const ref = TUNING_REFERENCE[key];
+
+  return `
+    <div class="card">
+
+      <h3>${ref.title}</h3>
+
+      ${ref.tables.map(x=>`
+        <div class="row">
+
+          <span>${x[0]}</span>
+
+          <b>${star(x[1])}</b>
+
+        </div>
+      `).join("")}
+
+    </div>
+  `;
+}
+if(avgAfr > 13.4){
+
+  html += renderReference(
+    "afrLean"
+  );
+
+}
+if(knockCount > 0){
+
+  html += renderReference(
+    "knock"
+  );
+
+}
+調校優先順序
+
+🔴 AFR 偏稀
+
+★★★★★ Fuel Main Table
+★★★★★ Fuel Pressure
+
+────────────────
+
+🔴 爆震
+
+★★★★★ Ignition Main Table
+★★★★★ Knock Control Table
+
+────────────────
+
+🟡 噴油嘴使用率高
+
+★★★★★ Injector Size
+★★★★☆ Fuel Pump
+priorityList.sort(
+  (a,b)=>b.priority-a.priority
+);
+
 function renderTuningMatrix(){
  const priority=$('#tuningPriority'),matrix=$('#tuningReference');if(!priority||!matrix)return;
  if(!S.r.length){priority.innerHTML='<div class="alert">載入 Log 後顯示調校優先順序。</div>';matrix.innerHTML='';return}
