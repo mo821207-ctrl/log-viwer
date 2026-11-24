@@ -30,7 +30,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const saved=JSON.parse(localStorage.getItem('aracer-gemini-settings')||'{}');
-if(saved.model) $('model').value=saved.model;if(saved.mode) $('mode').value=saved.mode;if(saved.proxy) $('proxy').value=saved.proxy;if(saved.directKey) $('key').value=saved.directKey;
+if(saved.model) $('model').value=saved.model;if(saved.mode)$('mode').value=saved.mode;if(saved.proxy)$('proxy').value=saved.proxy;if(saved.directKey)$('key').value=saved.directKey;
 $('mode').onchange=()=>{$('keyLabel').style.display=$('mode').value==='direct'?'block':'none';};$('mode').onchange();
 
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const text=await f.text();let summarized=text;if(f.name.endsWith('.json')){const d=JSON.parse(text);summarized=JSON.stringify(d,null,2).slice(0,30000)}else summarized=text.slice(0,30000);$('prompt').value=summarized;$('status').textContent=`已載入 ${f.name}`;}catch(x){$('status').textContent='檔案讀取失敗：'+x.message;$('result').innerHTML='<div class="alert danger">請確認檔案格式正確。</div>';}};
