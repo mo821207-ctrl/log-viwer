@@ -1,0 +1,47 @@
+name: LogViewer
+options:
+  bundleIdPrefix: com.aracer
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  SWIFT_VERSION: "5.0"
+  PRODUCT_BUNDLE_IDENTIFIER: com.aracer.LogViewer
+targets:
+  LogViewer:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/LogViewer
+    settings:
+      INFOPLIST_KEY_CFBundleDisplayName: "aRacer Log Viewer"
+      INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+      INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
+      INFOPLIST_KEY_UILaunchScreen_Generation: true
+    info:
+      path: Sources/LogViewer/Info.plist
+      properties:
+        CFBundleDisplayName: "aRacer Log Viewer"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+  LogViewerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/LogViewerTests
+    dependencies:
+      - target: LogViewer
+schemes:
+  LogViewer:
+    build:
+      targets:
+        LogViewer: all
+        LogViewerTests: [test]
+    test:
+      targets:
+        - LogViewerTests
