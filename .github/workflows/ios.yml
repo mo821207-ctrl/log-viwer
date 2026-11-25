@@ -3,6 +3,7 @@ name: iOS
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-test:
@@ -35,4 +36,28 @@ jobs:
             -scheme LogViewer \
             -sdk iphonesimulator \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -derivedDataPath build \
+            CONFIGURATION=Debug \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Package Simulator IPA
+        run: |
+          set -e
+          app_path="$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' -print -quit)"
+          if [ -z "$app_path" ]; then
+            echo "Could not find the built iOS app." >&2
+            exit 1
+          fi
+          rm -rf Payload LogViewer-simulator.ipa
+          mkdir -p Payload
+          cp -R "$app_path" Payload/
+          zip -qry LogViewer-simulator.ipa Payload
+
+      - name: Upload Simulator IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: LogViewer-simulator-ipa
+          path: |
+            LogViewer-simulator.ipa
+            build/Build/Products/Debug-iphonesimulator/*.app
+          if-no-files-found: error
